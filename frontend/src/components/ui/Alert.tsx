@@ -2,7 +2,14 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { ReactNode } from 'react';
-import { LucideIcon } from 'lucide-react';
+import { 
+  LucideIcon, 
+  CheckCircle, 
+  XCircle, 
+  AlertTriangle, 
+  Info, 
+  X 
+} from 'lucide-react';
 
 interface AlertProps {
   type?: 'info' | 'success' | 'warning' | 'error';
@@ -12,6 +19,7 @@ interface AlertProps {
   dismissible?: boolean;
   onDismiss?: () => void;
   className?: string;
+  variant?: 'filled' | 'outlined' | 'soft';
 }
 
 export default function Alert({
