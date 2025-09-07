@@ -1,8 +1,11 @@
 {
   "scripts": {
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "start": "./start.sh",
+    "stop": "./stop.sh",
+    "dev": "./start.sh",
     "dev:frontend": "cd frontend && npm run dev",
     "dev:backend": "cd backend && npm run dev",
+    "setup": "cd backend && npm install && cd ../frontend && npm install",
     "ai:setup": "echo 'Setting up AI-assisted development...'",
     "ai:component": "node scripts/ai-component-generator.js",
     "ai:api": "node scripts/ai-api-generator.js",

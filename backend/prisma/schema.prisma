@@ -10,48 +10,290 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User Management
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  username     String   @unique
-  passwordHash String
-  role         String   @default("VIEWER")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String    @id @default(uuid())
+  email         String    @unique
+  username      String    @unique
+  passwordHash  String
+  role          UserRole  @default(VIEWER)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
   
-  files     File[]
-  printJobs PrintJob[]
+  // Relations
+  files         File[]
+  printJobs     PrintJob[]
+  notifications Notification[]
+  sessions      Session[]
+  preferences   Json      @default("{}")
   
+  @@index([email])
+  @@index([username])
   @@map("users")
 }
 
+enum UserRole {
+  ADMIN
+  OPERATOR
+  VIEWER
+}
+
+// Session Management
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  token        String   @unique
+  refreshToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([userId])
+  @@map("sessions")
+}
+
+// File Management
 model File {
   id           String   @id @default(uuid())
   userId       String
   originalName String
+  fileName     String
   filePath     String
-  fileType     String
+  fileType     FileType
   fileSize     BigInt
+  metadata     Json?
+  thumbnailUrl String?
+  printCount   Int      @default(0)
   createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Relations
+  user      User       @relation(fields: [userId], references: [id])
   printJobs PrintJob[]
+  slicedFiles SlicedFile[]
   
+  @@index([userId])
+  @@index([fileType])
   @@map("files")
 }
 
+enum FileType {
+  STL
+  GCODE
+  OBJ
+  THREEMF
+}
+
+// Sliced Files (G-code)
+model SlicedFile {
+  id            String   @id @default(uuid())
+  sourceFileId  String
+  filePath      String
+  profileId     String
+  estimatedTime Int      // seconds
+  filamentUsage Float    // grams
+  layerHeight   Float
+  metadata      Json
+  createdAt     DateTime @default(now())
+  
+  sourceFile File          @relation(fields: [sourceFileId], references: [id], onDelete: Cascade)
+  profile    PrintProfile  @relation(fields: [profileId], references: [id])
+  printJobs  PrintJob[]
+  
+  @@index([sourceFileId])
+  @@map("sliced_files")
+}
+
+// Print Jobs
 model PrintJob {
+  id            String    @id @default(uuid())
+  userId        String
+  fileId        String
+  slicedFileId  String?
+  status        JobStatus
+  progress      Float     @default(0)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  estimatedTime Int?      // seconds
+  actualTime    Int?      // seconds
+  filamentUsed  Float?    // grams
+  cost          Decimal?  @db.Decimal(10, 2)
+  notes         String?
+  errorMessage  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  user        User              @relation(fields: [userId], references: [id])
+  file        File              @relation(fields: [fileId], references: [id])
+  slicedFile  SlicedFile?       @relation(fields: [slicedFileId], references: [id])
+  temperatures TemperatureLog[]
+  events      PrintEvent[]
+  timelapse   Timelapse?
+  
+  @@index([userId])
+  @@index([status])
+  @@index([startedAt])
+  @@map("print_jobs")
+}
+
+enum JobStatus {
+  QUEUED
+  PREPARING
+  PRINTING
+  PAUSED
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// Temperature Logging
+model TemperatureLog {
+  id           String   @id @default(uuid())
+  jobId        String
+  hotendTemp   Float
+  hotendTarget Float
+  bedTemp      Float
+  bedTarget    Float
+  chamberTemp  Float?
+  timestamp    DateTime @default(now())
+  
+  job PrintJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  @@index([jobId, timestamp])
+  @@map("temperature_logs")
+}
+
+// Print Events
+model PrintEvent {
   id        String    @id @default(uuid())
+  jobId     String
+  eventType EventType
+  message   String
+  severity  Severity
+  metadata  Json?
+  timestamp DateTime  @default(now())
+  
+  job PrintJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  @@index([jobId, timestamp])
+  @@map("print_events")
+}
+
+enum EventType {
+  JOB_STARTED
+  JOB_PAUSED
+  JOB_RESUMED
+  JOB_COMPLETED
+  JOB_FAILED
+  JOB_CANCELLED
+  FILAMENT_CHANGE
+  POWER_LOSS
+  THERMAL_RUNAWAY
+  POSITION_ERROR
+  CUSTOM
+}
+
+enum Severity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+// Printer Profiles
+model PrintProfile {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  description   String?
+  layerHeight   Float
+  printSpeed    Float
+  nozzleTemp    Float
+  bedTemp       Float
+  retraction    Float
+  infill        Int
+  supports      Boolean
+  metadata      Json
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  slicedFiles SlicedFile[]
+  
+  @@map("print_profiles")
+}
+
+// Printer Settings
+model PrinterSettings {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       Json
+  category    String
+  description String?
+  updatedAt   DateTime @updatedAt
+  
+  @@index([category])
+  @@map("printer_settings")
+}
+
+// Notifications
+model Notification {
+  id        String           @id @default(uuid())
   userId    String
-  fileId    String
-  status    String    @default("QUEUED")
-  progress  Float     @default(0)
-  startedAt DateTime?
-  completedAt DateTime?
-  createdAt DateTime  @default(now())
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  metadata  Json?
+  createdAt DateTime         @default(now())
   
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  file File @relation(fields: [fileId], references: [id], onDelete: Cascade)
   
-  @@map("print_jobs")
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  PRINT_COMPLETE
+  PRINT_FAILED
+  MAINTENANCE
+}
+
+// Time-lapse Videos
+model Timelapse {
+  id         String   @id @default(uuid())
+  jobId      String   @unique
+  videoPath  String
+  frameCount Int
+  duration   Int      // seconds
+  fileSize   BigInt
+  createdAt  DateTime @default(now())
+  
+  job PrintJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  @@map("timelapses")
+}
+
+// System Events (Audit Log)
+model SystemEvent {
+  id          String   @id @default(uuid())
+  eventType   String
+  description String
+  userId      String?
+  ipAddress   String?
+  userAgent   String?
+  metadata    Json?
+  timestamp   DateTime @default(now())
+  
+  @@index([eventType, timestamp])
+  @@index([userId])
+  @@map("system_events")
 }
