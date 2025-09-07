@@ -1,6 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Card, { CardContent } from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
+import { 
+  Settings, 
+  Printer, 
+  Thermometer, 
+  Bell, 
+  Camera, 
+  Save, 
+  RotateCcw, 
+  Download, 
+  Upload,
+  Wifi,
+  Palette,
+  Shield,
+  Zap,
+  Monitor
+} from 'lucide-react';
 
 interface PrinterSettings {
   printer: {
@@ -279,60 +298,105 @@ export default function SettingsManagement({ demoMode = false }: SettingsManagem
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
+      <motion.div 
+        className="flex items-center justify-center h-64"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <motion.div 
+          className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        />
+      </motion.div>
     );
   }
 
   if (!settings) {
     return (
-      <div className="text-center py-12">
+      <motion.div 
+        className="text-center py-12"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+      >
         <p className="text-gray-500">Failed to load settings</p>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg">
-      {/* Notification */}
-      {message && (
-        <div className={`p-4 rounded-lg mb-4 ${
-          message.type === 'success' 
-            ? 'bg-green-100 text-green-800 border border-green-200' 
-            : 'bg-red-100 text-red-800 border border-red-200'
-        }`}>
-          {message.text}
-        </div>
-      )}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Card elevated hoverable>
+        <CardContent className="p-0">
+          {/* Enhanced Notification */}
+          <AnimatePresence>
+            {message && (
+              <motion.div 
+                className={`p-4 m-4 rounded-lg ${
+                  message.type === 'success' 
+                    ? 'bg-green-100 text-green-800 border border-green-200' 
+                    : 'bg-red-100 text-red-800 border border-red-200'
+                }`}
+                initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+              >
+                {message.text}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="flex space-x-8 px-6">
-          {[
-            { id: 'printer', label: 'Printer', icon: '🖨️' },
-            { id: 'profiles', label: 'Profiles', icon: '🎛️' },
-            { id: 'preferences', label: 'Preferences', icon: '⚙️' },
-            { id: 'calibration', label: 'Calibration', icon: '🎯' },
-            { id: 'backup', label: 'Backup', icon: '💾' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === tab.id
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <span className="mr-2">{tab.icon}</span>
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      </div>
+          {/* Enhanced Tabs */}
+          <motion.div 
+            className="border-b border-gray-200"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <nav className="flex space-x-1 px-6">
+              {[
+                { id: 'printer', label: 'Printer', icon: Printer },
+                { id: 'profiles', label: 'Profiles', icon: Thermometer },
+                { id: 'preferences', label: 'Preferences', icon: Settings },
+                { id: 'calibration', label: 'Calibration', icon: Shield },
+                { id: 'backup', label: 'Backup', icon: Download },
+              ].map((tab, index) => {
+                const IconComponent = tab.icon;
+                return (
+                  <motion.button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                      activeTab === tab.id
+                        ? 'text-blue-600 border-blue-600'
+                        : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 + index * 0.1 }}
+                    whileHover={{ y: -2 }}
+                    whileTap={{ y: 0 }}
+                  >
+                    <IconComponent className="w-4 h-4" />
+                    <span>{tab.label}</span>
+                  </motion.button>
+                );
+              })}
+            </nav>
+          </motion.div>
 
-      <div className="p-6">
+          {/* Enhanced Content */}
+          <motion.div 
+            className="p-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
         {/* Printer Settings Tab */}
         {activeTab === 'printer' && (
           <div className="space-y-6">
@@ -501,28 +565,47 @@ export default function SettingsManagement({ demoMode = false }: SettingsManagem
             </div>
           </div>
         )}
-      </div>
+          </motion.div>
 
-      {/* Save Button */}
-      <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
-        <div className="flex justify-end">
-          <button
-            onClick={() => saveSettings(settings)}
-            disabled={saving}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+          {/* Enhanced Save Button */}
+          <motion.div 
+            className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
           >
-            {saving ? 'Saving...' : 'Save Settings'}
-          </button>
-        </div>
-      </div>
+            <div className="flex justify-end">
+              <Button
+                variant="primary"
+                onClick={() => settings && saveSettings(settings)}
+                disabled={saving}
+                className="flex items-center space-x-2"
+              >
+                <Save className="w-4 h-4" />
+                <span>{saving ? 'Saving...' : 'Save Settings'}</span>
+              </Button>
+            </div>
+          </motion.div>
 
-      {/* Profile Modal */}
-      {showProfileModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              {editingProfile ? 'Edit Profile' : 'Add Profile'}
-            </h3>
+          {/* Profile Modal */}
+          <AnimatePresence>
+            {showProfileModal && (
+              <motion.div 
+                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <motion.div 
+                  className="bg-white rounded-lg p-6 w-full max-w-md"
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                >
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    {editingProfile ? 'Edit Profile' : 'Add Profile'}
+                  </h3>
             
             {/* Profile form would go here */}
             <div className="space-y-4">
@@ -551,9 +634,12 @@ export default function SettingsManagement({ demoMode = false }: SettingsManagem
                 Save
               </button>
             </div>
-          </div>
-        </div>
-      )}
-    </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }

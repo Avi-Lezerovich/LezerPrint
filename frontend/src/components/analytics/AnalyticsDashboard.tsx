@@ -1,7 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import Card, { CardContent, CardHeader } from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
+import LoadingSpinner, { Skeleton } from '@/components/ui/Loading';
+import { 
+  Package, 
+  CheckCircle, 
+  Clock, 
+  TrendingUp, 
+  DollarSign, 
+  Zap, 
+  Star,
+  AlertTriangle
+} from 'lucide-react';
 
 interface AnalyticsData {
   printStats: {
@@ -131,15 +145,40 @@ export default function AnalyticsDashboard({
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg shadow p-6">
-            <div className="animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
-              <div className="h-32 bg-gray-200 rounded"></div>
-            </div>
-          </div>
-        ))}
+      <div className="space-y-6">
+        {/* Loading animation with staggered cards */}
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.1
+              }
+            }
+          }}
+        >
+          {[...Array(4)].map((_, i) => (
+            <motion.div
+              key={i}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 }
+              }}
+            >
+              <Card loading={true} />
+            </motion.div>
+          ))}
+        </motion.div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} loading={true} className="h-80" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -155,195 +194,441 @@ export default function AnalyticsDashboard({
   const { printStats, monthlyData, materialUsage, printTimes, qualityScores, errorTypes } = data;
 
   return (
-    <div className="space-y-6">
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Total Prints</p>
-              <p className="text-2xl font-bold text-gray-900">{printStats.totalPrints}</p>
-            </div>
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Success Rate</p>
-              <p className="text-2xl font-bold text-green-600">{printStats.successRate}%</p>
-            </div>
-            <div className="p-2 bg-green-100 rounded-lg">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Print Time</p>
-              <p className="text-2xl font-bold text-purple-600">{printStats.totalPrintTime.toFixed(1)}h</p>
-            </div>
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Filament Used</p>
-              <p className="text-2xl font-bold text-orange-600">{(printStats.totalFilamentUsed / 1000).toFixed(1)}kg</p>
-            </div>
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.79 4 8.5 4s8.5-1.79 8.5-4V7M4 7c0 2.21 3.79 4 8.5 4s8.5-1.79 8.5-4M4 7c0-2.21 3.79-4 8.5-4s8.5 1.79 8.5 4" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Charts Row 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Monthly Trends */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Monthly Trends</h3>
-            <select 
-              value={selectedMetric} 
-              onChange={(e) => setSelectedMetric(e.target.value as any)}
-              className="text-sm border border-gray-300 rounded-md px-3 py-1"
-            >
-              <option value="prints">Prints</option>
-              <option value="time">Time (hours)</option>
-              <option value="filament">Filament (g)</option>
-            </select>
-          </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Area 
-                type="monotone" 
-                dataKey={selectedMetric} 
-                stroke="#3B82F6" 
-                fill="#3B82F6" 
-                fillOpacity={0.3}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Material Usage */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Material Usage</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={materialUsage}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ material, percentage }) => `${material} ${percentage}%`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="weight"
-              >
-                {materialUsage.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value: any, name) => [`${value}g`, 'Weight']} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Charts Row 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Print Duration Distribution */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Print Duration Distribution</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={printTimes}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="duration" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="count" fill="#10B981" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Quality Score Trend */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quality Score Trend</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={qualityScores}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis domain={[0, 10]} />
-              <Tooltip />
-              <Line 
-                type="monotone" 
-                dataKey="score" 
-                stroke="#F59E0B" 
-                strokeWidth={3}
-                dot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Error Analysis */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Failure Analysis</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Error Types</h4>
-            <div className="space-y-3">
-              {errorTypes.map((error, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">{error.type}</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-24 bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-red-500 h-2 rounded-full" 
-                        style={{ width: `${error.percentage}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-sm text-gray-500 w-8">{error.count}</span>
+    <motion.div 
+      className="space-y-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      {/* Enhanced Key Metrics */}
+      <motion.div 
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.1
+            }
+          }
+        }}
+      >
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+          <Card elevated hoverable>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Total Prints</p>
+                  <motion.p 
+                    className="text-2xl font-bold text-gray-900"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.2, type: "spring" }}
+                  >
+                    {printStats.totalPrints}
+                  </motion.p>
+                  <div className="flex items-center mt-1">
+                    <TrendingUp className="w-3 h-3 text-green-500 mr-1" />
+                    <span className="text-xs text-green-600">+12% from last month</span>
                   </div>
                 </div>
-              ))}
+                <motion.div 
+                  className="p-3 bg-blue-100 rounded-full"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
+                  <Package className="w-6 h-6 text-blue-600" />
+                </motion.div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+          <Card elevated hoverable>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Success Rate</p>
+                  <motion.p 
+                    className="text-2xl font-bold text-green-600"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.3, type: "spring" }}
+                  >
+                    {printStats.successRate}%
+                  </motion.p>
+                  <div className="flex items-center mt-1">
+                    <CheckCircle className="w-3 h-3 text-green-500 mr-1" />
+                    <span className="text-xs text-green-600">Excellent performance</span>
+                  </div>
+                </div>
+                <motion.div 
+                  className="p-3 bg-green-100 rounded-full"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
+                  <CheckCircle className="w-6 h-6 text-green-600" />
+                </motion.div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+          <Card elevated hoverable>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Print Time</p>
+                  <motion.p 
+                    className="text-2xl font-bold text-purple-600"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.4, type: "spring" }}
+                  >
+                    {printStats.totalPrintTime.toFixed(1)}h
+                  </motion.p>
+                  <div className="flex items-center mt-1">
+                    <Clock className="w-3 h-3 text-purple-500 mr-1" />
+                    <span className="text-xs text-purple-600">Avg: {printStats.averagePrintTime.toFixed(1)}h</span>
+                  </div>
+                </div>
+                <motion.div 
+                  className="p-3 bg-purple-100 rounded-full"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
+                  <Clock className="w-6 h-6 text-purple-600" />
+                </motion.div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+          <Card elevated hoverable>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Filament Used</p>
+                  <motion.p 
+                    className="text-2xl font-bold text-orange-600"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.5, type: "spring" }}
+                  >
+                    {(printStats.totalFilamentUsed / 1000).toFixed(1)}kg
+                  </motion.p>
+                  <div className="flex items-center mt-1">
+                    <DollarSign className="w-3 h-3 text-orange-500 mr-1" />
+                    <span className="text-xs text-orange-600">Saved: ${printStats.costSavings}</span>
+                  </div>
+                </div>
+                <motion.div 
+                  className="p-3 bg-orange-100 rounded-full"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
+                  <Zap className="w-6 h-6 text-orange-600" />
+                </motion.div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
+
+      {/* Enhanced Charts Row 1 */}
+      <motion.div 
+        className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.2
+            }
+          }
+        }}
+      >
+        {/* Monthly Trends */}
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+          <Card elevated hoverable>
+            <CardContent>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <TrendingUp className="w-5 h-5 mr-2 text-blue-600" />
+                  Monthly Trends
+                </h3>
+                <motion.select 
+                  value={selectedMetric} 
+                  onChange={(e) => setSelectedMetric(e.target.value as any)}
+                  className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  whileHover={{ scale: 1.02 }}
+                  whileFocus={{ scale: 1.02 }}
+                >
+                  <option value="prints">Prints</option>
+                  <option value="time">Time (hours)</option>
+                  <option value="filament">Filament (g)</option>
+                </motion.select>
+              </div>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={monthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip
+                      contentStyle={{ 
+                        backgroundColor: '#fff', 
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey={selectedMetric} 
+                      stroke="#3B82F6" 
+                      fill="#3B82F6" 
+                      fillOpacity={0.3}
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Material Usage */}
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+          <Card elevated hoverable>
+            <CardContent>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Zap className="w-5 h-5 mr-2 text-orange-600" />
+                Material Usage
+              </h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={materialUsage}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ material, percentage }) => `${material} ${percentage}%`}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="weight"
+                    >
+                      {materialUsage.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: any, name) => [`${value}g`, 'Weight']}
+                      contentStyle={{ 
+                        backgroundColor: '#fff', 
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
+
+      {/* Enhanced Charts Row 2 */}
+      <motion.div 
+        className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.2,
+              delayChildren: 0.3
+            }
+          }
+        }}
+      >
+        {/* Print Duration Distribution */}
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+          <Card elevated hoverable>
+            <CardContent>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Clock className="w-5 h-5 mr-2 text-green-600" />
+                Print Duration Distribution
+              </h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={printTimes}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                    <XAxis dataKey="duration" />
+                    <YAxis />
+                    <Tooltip
+                      contentStyle={{ 
+                        backgroundColor: '#fff', 
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      }}
+                    />
+                    <Bar dataKey="count" fill="#10B981" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Quality Score Trend */}
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+          <Card elevated hoverable>
+            <CardContent>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Star className="w-5 h-5 mr-2 text-yellow-600" />
+                Quality Score Trend
+              </h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={qualityScores}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                    <XAxis dataKey="date" />
+                    <YAxis domain={[0, 10]} />
+                    <Tooltip
+                      contentStyle={{ 
+                        backgroundColor: '#fff', 
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="score" 
+                      stroke="#F59E0B" 
+                      strokeWidth={3}
+                      dot={{ fill: '#F59E0B', strokeWidth: 2, r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
+
+      {/* Enhanced Error Analysis */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+      >
+        <Card elevated hoverable>
+          <CardContent>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <AlertTriangle className="w-5 h-5 mr-2 text-red-600" />
+              Failure Analysis
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8 }}
+              >
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Error Types</h4>
+                <div className="space-y-3">
+                  {errorTypes.map((error, index) => (
+                    <motion.div 
+                      key={index} 
+                      className="flex items-center justify-between"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.9 + index * 0.1 }}
+                    >
+                      <span className="text-sm text-gray-600">{error.type}</span>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-24 bg-gray-200 rounded-full h-2 relative overflow-hidden">
+                          <motion.div 
+                            className="bg-red-500 h-2 rounded-full" 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${error.percentage}%` }}
+                            transition={{ delay: 1 + index * 0.1, duration: 0.5 }}
+                          />
+                        </div>
+                        <span className="text-sm text-gray-500 w-8">{error.count}</span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8 }}
+              >
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Recommendations</h4>
+                <motion.ul 
+                  className="text-sm text-gray-600 space-y-2"
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                      opacity: 1,
+                      transition: {
+                        staggerChildren: 0.1,
+                        delayChildren: 1
+                      }
+                    }
+                  }}
+                >
+                  <motion.li 
+                    variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }}
+                    className="flex items-center"
+                  >
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-3" />
+                    Review bed leveling procedure
+                  </motion.li>
+                  <motion.li 
+                    variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }}
+                    className="flex items-center"
+                  >
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-3" />
+                    Clean and maintain filament path
+                  </motion.li>
+                  <motion.li 
+                    variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }}
+                    className="flex items-center"
+                  >
+                    <div className="w-2 h-2 bg-orange-500 rounded-full mr-3" />
+                    Check temperature sensor calibration
+                  </motion.li>
+                  <motion.li 
+                    variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }}
+                    className="flex items-center"
+                  >
+                    <div className="w-2 h-2 bg-purple-500 rounded-full mr-3" />
+                    Consider UPS for power stability
+                  </motion.li>
+                </motion.ul>
+              </motion.div>
             </div>
-          </div>
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Recommendations</h4>
-            <ul className="text-sm text-gray-600 space-y-2">
-              <li>• Review bed leveling procedure</li>
-              <li>• Clean and maintain filament path</li>
-              <li>• Check temperature sensor calibration</li>
-              <li>• Consider UPS for power stability</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </motion.div>
   );
 }

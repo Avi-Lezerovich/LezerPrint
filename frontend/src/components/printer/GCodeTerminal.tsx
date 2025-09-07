@@ -1,6 +1,23 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Card, { CardContent } from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
+import { 
+  Send, 
+  Terminal, 
+  Play, 
+  Pause, 
+  RotateCcw, 
+  Home, 
+  Thermometer,
+  Settings,
+  History,
+  Download,
+  Upload,
+  Trash2
+} from 'lucide-react';
 
 interface GCodeCommand {
   id: string;
@@ -259,50 +276,89 @@ export default function GCodeTerminal({
     : predefinedMacros.filter(m => m.category === selectedMacroCategory);
 
   return (
-    <div className={`bg-white rounded-lg shadow-lg ${className}`}>
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
-          <h3 className="text-lg font-semibold text-gray-900">G-code Terminal</h3>
-          <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-            isConnected 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-red-100 text-red-800'
-          }`}>
-            {isConnected ? 'Connected' : 'Disconnected'}
-          </div>
-          {demoMode && (
-            <div className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              Demo Mode
+    <motion.div 
+      className={`${className}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Card elevated hoverable>
+        <CardContent className="p-0">
+          {/* Enhanced Header */}
+          <motion.div 
+            className="flex items-center justify-between p-4 border-b border-gray-200"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="flex items-center space-x-3">
+              <motion.div
+                initial={{ rotate: 0 }}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <Terminal className="w-6 h-6 text-blue-600" />
+              </motion.div>
+              <h3 className="text-lg font-semibold text-gray-900">G-code Terminal</h3>
+              <motion.div 
+                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  isConnected 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.4, type: "spring" }}
+              >
+                {isConnected ? 'Connected' : 'Disconnected'}
+              </motion.div>
+              {demoMode && (
+                <motion.div 
+                  className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  Demo Mode
+                </motion.div>
+              )}
             </div>
-          )}
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setShowMacros(!showMacros)}
-            className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            Macros
-          </button>
-          <button
-            onClick={() => setAutoScroll(!autoScroll)}
-            className={`px-3 py-1 text-sm rounded-md ${
-              autoScroll 
-                ? 'bg-green-600 text-white hover:bg-green-700' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            Auto-scroll
-          </button>
-          <button
-            onClick={clearTerminal}
-            className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
-          >
-            Clear
-          </button>
-        </div>
-      </div>
+            
+            <motion.div 
+              className="flex items-center space-x-2"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowMacros(!showMacros)}
+                className="flex items-center space-x-1"
+              >
+                <Settings className="w-4 h-4" />
+                <span>Macros</span>
+              </Button>
+              <Button
+                variant={autoScroll ? "success" : "secondary"}
+                size="sm"
+                onClick={() => setAutoScroll(!autoScroll)}
+                className="flex items-center space-x-1"
+              >
+                <History className="w-4 h-4" />
+                <span>Auto-scroll</span>
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={clearTerminal}
+                className="flex items-center space-x-1"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Clear</span>
+              </Button>
+            </motion.div>
+          </motion.div>
 
       {/* Macros Panel */}
       {showMacros && (
@@ -415,6 +471,8 @@ export default function GCodeTerminal({
           )}
         </div>
       )}
-    </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
