@@ -129,7 +129,7 @@ export default function PrinterMainDashboardPage() {
                 }}
               >
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                  <Card elevated hoverable>
+                  <Card variant="elevated" hoverable>
                     <CardContent>
                       <div className="flex items-center justify-between">
                         <div>
@@ -149,7 +149,7 @@ export default function PrinterMainDashboardPage() {
                 </motion.div>
 
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                  <Card elevated hoverable>
+                  <Card variant="elevated" hoverable>
                     <CardContent>
                       <div className="flex items-center justify-between">
                         <div>
@@ -183,7 +183,7 @@ export default function PrinterMainDashboardPage() {
                 </motion.div>
 
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                  <Card elevated hoverable>
+                  <Card variant="elevated" hoverable>
                     <CardContent>
                       <div className="flex items-center justify-between">
                         <div>
@@ -203,7 +203,7 @@ export default function PrinterMainDashboardPage() {
                 </motion.div>
 
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                  <Card elevated hoverable>
+                  <Card variant="elevated" hoverable>
                     <CardContent>
                       <div className="flex items-center justify-between">
                         <div>
@@ -229,7 +229,7 @@ export default function PrinterMainDashboardPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
               >
-                <Card elevated>
+                <Card variant="elevated">
                   <CardContent>
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
                     <div className="flex flex-wrap gap-3">

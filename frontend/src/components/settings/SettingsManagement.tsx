@@ -330,7 +330,7 @@ export default function SettingsManagement({ demoMode = false }: SettingsManagem
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card elevated hoverable>
+      <Card variant="elevated" hoverable>
         <CardContent className="p-0">
           {/* Enhanced Notification */}
           <AnimatePresence>

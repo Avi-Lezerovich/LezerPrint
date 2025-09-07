@@ -216,7 +216,7 @@ export default function AnalyticsDashboard({
         }}
       >
         <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-          <Card elevated hoverable>
+          <Card variant="elevated" hoverable>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
@@ -247,7 +247,7 @@ export default function AnalyticsDashboard({
         </motion.div>
 
         <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-          <Card elevated hoverable>
+          <Card variant="elevated" hoverable>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
@@ -278,7 +278,7 @@ export default function AnalyticsDashboard({
         </motion.div>
 
         <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-          <Card elevated hoverable>
+          <Card variant="elevated" hoverable>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
@@ -309,7 +309,7 @@ export default function AnalyticsDashboard({
         </motion.div>
 
         <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-          <Card elevated hoverable>
+          <Card variant="elevated" hoverable>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
@@ -357,7 +357,7 @@ export default function AnalyticsDashboard({
       >
         {/* Monthly Trends */}
         <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-          <Card elevated hoverable>
+          <Card variant="elevated" hoverable>
             <CardContent>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center">
@@ -407,7 +407,7 @@ export default function AnalyticsDashboard({
 
         {/* Material Usage */}
         <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-          <Card elevated hoverable>
+          <Card variant="elevated" hoverable>
             <CardContent>
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <Zap className="w-5 h-5 mr-2 text-orange-600" />
@@ -465,7 +465,7 @@ export default function AnalyticsDashboard({
       >
         {/* Print Duration Distribution */}
         <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-          <Card elevated hoverable>
+          <Card variant="elevated" hoverable>
             <CardContent>
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <Clock className="w-5 h-5 mr-2 text-green-600" />
@@ -495,7 +495,7 @@ export default function AnalyticsDashboard({
 
         {/* Quality Score Trend */}
         <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-          <Card elevated hoverable>
+          <Card variant="elevated" hoverable>
             <CardContent>
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <Star className="w-5 h-5 mr-2 text-yellow-600" />
@@ -536,7 +536,7 @@ export default function AnalyticsDashboard({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
       >
-        <Card elevated hoverable>
+        <Card variant="elevated" hoverable>
           <CardContent>
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <AlertTriangle className="w-5 h-5 mr-2 text-red-600" />
