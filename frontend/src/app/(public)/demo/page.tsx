@@ -5,6 +5,8 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import CameraViewer from '@/components/camera/CameraViewer';
+import AnalyticsDashboard from '@/components/analytics/AnalyticsDashboard';
+import GCodeTerminal from '@/components/printer/GCodeTerminal';
 
 // Mock data for demo mode
 const mockPrinterStatus = {
@@ -315,6 +317,8 @@ export default function DemoPage() {
                   <li>Live camera feed with snapshot capability</li>
                   <li>Comprehensive print history and analytics</li>
                   <li>Job status tracking and management</li>
+                  <li>Advanced analytics dashboard</li>
+                  <li>G-code terminal interface</li>
                 </ul>
                 <p className="mt-2">
                   <Link href="/login" className="font-medium text-blue-800 hover:text-blue-900">
@@ -323,6 +327,21 @@ export default function DemoPage() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Advanced Features Showcase */}
+        <div className="mt-8 space-y-8">
+          {/* Analytics Dashboard */}
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">📈 Analytics Dashboard</h2>
+            <AnalyticsDashboard demoMode={true} />
+          </div>
+
+          {/* G-code Terminal */}
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">💻 G-code Terminal</h2>
+            <GCodeTerminal demoMode={true} readOnly={true} />
           </div>
         </div>
       </div>
