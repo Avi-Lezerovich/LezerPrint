@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "ai:setup": "echo 'Setting up AI-assisted development...'",
+    "ai:component": "node scripts/ai-component-generator.js",
+    "ai:api": "node scripts/ai-api-generator.js",
+    "claude:help": "echo 'I need help with...' | claude --model claude-3-sonnet-20241022"
+  }
+}
