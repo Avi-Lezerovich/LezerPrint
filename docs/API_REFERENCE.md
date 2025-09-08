@@ -1,6 +1,6 @@
 # 📡 API Reference
 
-*Complete documentation for LezerPrint REST API and WebSocket events*
+Complete documentation for LezerPrint REST API and WebSocket events (kept in sync with the current backend).
 
 ---
 
@@ -40,21 +40,26 @@ Accept: application/json
 
 ### API Version
 
-Current API version: `v1`
+All endpoints are currently prefixed with `/api/` with no version segment.
 
-All endpoints are prefixed with `/api/` (no version in path currently).
+Health endpoints:
+
+```
+GET /api/health  -> { status: 'ok', version: '1.0.0', timestamp }
+GET /api/status  -> { server: 'LezerPrint Backend', status: 'running', timestamp }
+```
 
 ---
 
 ## 🔐 Authentication
 
-LezerPrint uses JWT (JSON Web Tokens) for authentication.
+LezerPrint uses JWT (JSON Web Tokens).
 
 ### Authentication Flow
 
-1. **Register** or **Login** to get JWT token
-2. **Include token** in Authorization header for protected endpoints
-3. **Refresh token** when needed (7-day expiry)
+1. Register or login to get tokens
+2. Include the access token in the Authorization header for protected endpoints
+3. Refresh using the refresh token when the access token expires
 
 ### Authorization Header
 
@@ -62,21 +67,25 @@ LezerPrint uses JWT (JSON Web Tokens) for authentication.
 Authorization: Bearer <jwt_token>
 ```
 
-### Token Response Format
+### Token lifetimes
+
+- Access token (JWT): 15 minutes
+- Refresh token (JWT): 7 days
+
+Auth endpoints return the following shape (no `success` wrapper):
 
 ```json
 {
-  "success": true,
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "expiresIn": "7d",
-    "user": {
-      "id": "user-uuid",
-      "email": "user@example.com",
-      "username": "username",
-      "role": "OPERATOR"
-    }
+  "message": "...",
+  "user": {
+    "id": "user-uuid",
+    "email": "user@example.com",
+    "username": "username",
+    "role": "VIEWER|OPERATOR|ADMIN"
+  },
+  "tokens": {
+    "accessToken": "<jwt>",
+    "refreshToken": "<jwt>"
   }
 }
 ```
@@ -87,16 +96,19 @@ Authorization: Bearer <jwt_token>
 
 ### Error Response Format
 
+Most API routes respond with a standard envelope:
+
 ```json
-{
-  "success": false,
-  "error": {
-    "code": "ERROR_CODE",
-    "message": "Human-readable error message",
-    "details": {} // Optional additional details
-  }
-}
+{ "success": true, "data": { /* payload */ }, "meta": { /* optional */ } }
 ```
+
+On validation or server errors these routes return:
+
+```json
+{ "success": false, "error": { "code": "ERROR_CODE", "message": "...", "details": {} } }
+```
+
+Note: Auth endpoints return plain objects with `message`, `user`, and `tokens` fields (no `success` wrapper).
 
 ### Common Error Codes
 
@@ -115,19 +127,7 @@ Authorization: Bearer <jwt_token>
 
 ## 🚦 Rate Limiting
 
-### Limits
-
-- **General API**: 100 requests per minute per IP
-- **File Upload**: 5 uploads per minute per user
-- **Printer Commands**: 30 commands per minute per user
-
-### Headers
-
-```http
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 99
-X-RateLimit-Reset: 1640995200
-```
+Not currently enforced in the backend. Planned limits may include per-IP request ceilings and per-user command throttles.
 
 ---
 
@@ -155,16 +155,16 @@ POST /api/auth/register
 
 ```json
 {
-  "success": true,
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "user": {
-      "id": "user-uuid",
-      "email": "user@example.com",
-      "username": "username",
-      "role": "VIEWER"
-    }
+  "message": "User registered successfully",
+  "user": {
+    "id": "user-uuid",
+    "email": "user@example.com",
+    "username": "username",
+    "role": "VIEWER"
+  },
+  "tokens": {
+    "accessToken": "<jwt>",
+    "refreshToken": "<jwt>"
   }
 }
 ```
@@ -186,7 +186,23 @@ POST /api/auth/login
 }
 ```
 
-**Response:** Same as register response.
+**Response:**
+
+```json
+{
+  "message": "Login successful",
+  "user": {
+    "id": "user-uuid",
+    "email": "user@example.com",
+    "username": "username",
+    "role": "VIEWER|OPERATOR|ADMIN"
+  },
+  "tokens": {
+    "accessToken": "<jwt>",
+    "refreshToken": "<jwt>"
+  }
+}
+```
 
 ### Refresh Token
 
@@ -199,9 +215,13 @@ POST /api/auth/refresh
 **Request Body:**
 
 ```json
-{
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
+{ "refreshToken": "<jwt>" }
+```
+
+**Response:**
+
+```json
+{ "message": "Token refreshed successfully", "tokens": { "accessToken": "<jwt>", "refreshToken": "<jwt>" } }
 ```
 
 ### Logout
@@ -216,12 +236,7 @@ Authorization: Bearer <token>
 **Response:**
 
 ```json
-{
-  "success": true,
-  "data": {
-    "message": "Logged out successfully"
-  }
-}
+{ "message": "Logout successful" }
 ```
 
 ### Get Profile
@@ -236,19 +251,7 @@ Authorization: Bearer <token>
 **Response:**
 
 ```json
-{
-  "success": true,
-  "data": {
-    "user": {
-      "id": "user-uuid",
-      "email": "user@example.com",
-      "username": "username",
-      "role": "OPERATOR",
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "lastLoginAt": "2024-01-01T12:00:00.000Z"
-    }
-  }
-}
+{ "user": { "id": "user-uuid", "email": "user@example.com", "username": "username", "role": "VIEWER|OPERATOR|ADMIN", "createdAt": "2024-01-01T00:00:00.000Z", "updatedAt": "2024-01-01T12:00:00.000Z" } }
 ```
 
 ---
@@ -270,28 +273,16 @@ Authorization: Bearer <token>
 {
   "success": true,
   "data": {
-    "state": "idle",
+    "state": "idle|printing|paused|error",
+    "error": null,
+    "connected": true,
     "temperatures": {
-      "hotend": {
-        "current": 25.0,
-        "target": 0.0
-      },
-      "bed": {
-        "current": 24.5,
-        "target": 0.0
-      }
+      "hotendTemp": 25.0,
+      "hotendTarget": 0.0,
+      "bedTemp": 24.5,
+      "bedTarget": 0.0
     },
-    "position": {
-      "x": 150.0,
-      "y": 150.0,
-      "z": 10.0,
-      "e": 0.0
-    },
-    "progress": {
-      "completion": 0.0,
-      "printTime": 0,
-      "printTimeLeft": null
-    },
+    "position": { "x": 0, "y": 0, "z": 0, "e": 0 },
     "currentJob": null
   }
 }
@@ -361,11 +352,7 @@ Authorization: Bearer <token>
 **Request Body:**
 
 ```json
-{
-  "axis": "Z",
-  "distance": 10.0,
-  "speed": 1000
-}
+{ "axis": "X|Y|Z|E", "distance": 10.0, "speed": 1000 }
 ```
 
 ### Set Temperature
@@ -382,11 +369,7 @@ Authorization: Bearer <token>
 **Request Body:**
 
 ```json
-{
-  "hotend": 200,
-  "bed": 60,
-  "chamber": 40
-}
+{ "hotend": 200, "bed": 60, "chamber": 40 }
 ```
 
 ### Emergency Stop
@@ -452,7 +435,7 @@ Authorization: Bearer <token>
 |-----------|------|---------|-------------|
 | `page` | number | 1 | Page number |
 | `limit` | number | 20 | Items per page |
-| `type` | string | - | Filter by file type (STL, GCODE, OBJ, THREEMF) |
+| `type` | string | - | Filter by file type (STL, GCODE) |
 | `sort` | string | date | Sort by (name, date, size) |
 | `order` | string | desc | Sort order (asc, desc) |
 
@@ -466,23 +449,21 @@ Authorization: Bearer <token>
       {
         "id": "file-uuid",
         "originalName": "model.stl",
-        "fileName": "unique-filename.stl",
+        "fileName": "safe-name-123.stl",
         "fileType": "STL",
-        "fileSize": "1048576",
+        "fileSize": "1048576", // serialized as string
         "createdAt": "2024-01-01T00:00:00.000Z",
-        "printCount": 3,
-        "thumbnailUrl": "/uploads/thumbnails/thumb.jpg"
+        "printCount": 3
       }
     ],
-    "pagination": {
-      "page": 1,
-      "limit": 20,
-      "total": 45,
-      "pages": 3
-    }
+    "total": 45,
+    "page": 1,
+    "pages": 3
   }
 }
 ```
+
+Note: `fileSize` is stored as BigInt in the DB and serialized as a string in responses.
 
 ### Get File Details
 
@@ -502,25 +483,13 @@ Authorization: Bearer <token>
     "file": {
       "id": "file-uuid",
       "originalName": "model.stl",
-      "fileName": "unique-filename.stl",
+      "fileName": "safe-name-123.stl",
       "fileType": "STL",
       "fileSize": "1048576",
-      "metadata": {
-        "dimensions": {
-          "x": 100,
-          "y": 100,
-          "z": 50
-        },
-        "triangles": 15420
-      },
+      "metadata": null,
       "createdAt": "2024-01-01T00:00:00.000Z",
-      "user": {
-        "id": "user-uuid",
-        "username": "username"
-      },
-      "_count": {
-        "printJobs": 3
-      }
+      "user": { "id": "user-uuid", "username": "username" },
+      "_count": { "printJobs": 3 }
     }
   }
 }
@@ -544,12 +513,12 @@ folder: "models" (optional)
 ```
 
 **Supported File Types:**
-- STL (3D models)
-- G-code (print instructions)
-- OBJ (3D models)
-- 3MF (3D models with metadata)
+- STL (.stl)
+- G-code (.gcode, .gco, .g)
 
-**Max File Size:** 50MB
+OBJ/3MF are not accepted by the current upload filter.
+
+**Max File Size:** 100MB by default (configurable via `MAX_FILE_SIZE`).
 
 **Response:**
 
@@ -560,10 +529,9 @@ folder: "models" (optional)
     "file": {
       "id": "file-uuid",
       "originalName": "model.stl",
-      "fileName": "unique-filename.stl",
+      "fileName": "safe-name-123.stl",
       "fileType": "STL",
-      "fileSize": "1048576",
-      "thumbnailUrl": "/uploads/thumbnails/thumb.jpg"
+      "fileSize": "1048576"
     }
   }
 }
@@ -620,7 +588,7 @@ Authorization: Bearer <token>
 | `page` | number | 1 | Page number |
 | `limit` | number | 20 | Items per page |
 | `status` | string | - | Filter by status |
-| `userId` | string | - | Filter by user (admin only) |
+| `userId` | string | - | (Not supported by current endpoint) |
 
 **Response:**
 
@@ -628,51 +596,27 @@ Authorization: Bearer <token>
 {
   "success": true,
   "data": {
-    "jobs": [
-      {
-        "id": "job-uuid",
-        "status": "COMPLETED",
-        "progress": 100.0,
-        "startedAt": "2024-01-01T10:00:00.000Z",
-        "completedAt": "2024-01-01T12:30:00.000Z",
-        "estimatedTime": 9000,
-        "actualTime": 9000,
-        "filamentUsed": 25.5,
-        "cost": "3.50",
-        "file": {
-          "id": "file-uuid",
-          "originalName": "model.stl"
-        }
-      }
-    ],
-    "pagination": {
-      "page": 1,
-      "limit": 20,
-      "total": 15,
-      "pages": 1
-    }
-  }
+    "jobs": [ /* PrintJob[] */ ]
+  },
+  "meta": { "page": 1, "limit": 20, "total": 15, "pages": 1 }
 }
 ```
 
-### Create Print Job
+### Start Job
 
-Create a new print job from an uploaded file.
+Create and start a job from an uploaded file.
 
 ```http
-POST /api/jobs
+POST /api/jobs/start
 Authorization: Bearer <token>
 ```
+
+Required role: OPERATOR or ADMIN
 
 **Request Body:**
 
 ```json
-{
-  "fileId": "file-uuid",
-  "profileId": "profile-uuid",
-  "priority": "normal",
-  "startImmediately": false
-}
+{ "fileId": "file-uuid" }
 ```
 
 ### Get Job Details
@@ -684,23 +628,18 @@ GET /api/jobs/:id
 Authorization: Bearer <token>
 ```
 
-### Update Job
-
-Update print job properties.
+### Pause/Resume/Cancel Job
 
 ```http
-PUT /api/jobs/:id
+POST /api/jobs/:id/pause
+POST /api/jobs/:id/resume
+POST /api/jobs/:id/cancel
 Authorization: Bearer <token>
 ```
 
-### Cancel Job
+Required role: OPERATOR or ADMIN
 
-Cancel a queued or running print job.
-
-```http
-DELETE /api/jobs/:id
-Authorization: Bearer <token>
-```
+Note: There is no `PUT /api/jobs/:id` or `DELETE /api/jobs/:id` in the current implementation.
 
 ---
 
@@ -711,7 +650,7 @@ Authorization: Bearer <token>
 Get dashboard analytics data.
 
 ```http
-GET /api/analytics/dashboard?range=30d
+GET /api/analytics/dashboard
 Authorization: Bearer <token>
 ```
 
@@ -719,29 +658,12 @@ Authorization: Bearer <token>
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `range` | string | 30d | Time range (7d, 30d, 90d, 1y) |
+| `range` | string | - | Not currently supported |
 
 **Response:**
 
 ```json
-{
-  "success": true,
-  "data": {
-    "totalPrints": 45,
-    "successRate": 92.5,
-    "totalTime": 156000,
-    "materialUsed": 850.5,
-    "averagePrintTime": 3467,
-    "trends": [
-      {
-        "date": "2024-01-01",
-        "prints": 5,
-        "successRate": 100,
-        "time": 18000
-      }
-    ]
-  }
-}
+{ "success": true, "data": { "totalPrints": 0, "successRate": 0, "totalTime": 0, "materialUsed": 0, "averagePrintTime": 0, "trends": [] } }
 ```
 
 ### Material Usage Statistics
@@ -762,102 +684,59 @@ Authorization: Bearer <token>
 
 ## 🔌 WebSocket Events
 
-LezerPrint uses WebSocket for real-time communication.
+Realtime via Socket.IO. Authenticate by passing the access token in `auth`.
 
 ### Connection
 
 ```javascript
+import { io } from 'socket.io-client';
+
 const socket = io('http://localhost:3001', {
-  auth: {
-    token: 'your-jwt-token'
-  }
+  auth: { token },
+  transports: ['websocket']
+});
+
+socket.on('connected', (info) => {
+  console.log('Connected:', info);
 });
 ```
 
-### Server Events (Received)
+### Server Events (received)
 
-#### Printer Status Updates
+- `connected` -> initial connection info
+- `status:current` and `status:update` -> printer status snapshots/updates
+- `temperature:current` and `temperature:update` -> temperature data
+- `progress:update` -> job progress updates
+- `alert` -> important alerts
+- `camera:frame` -> base64 JPEG frames (when subscribed and authorized)
+- `control:response` and `command:response` -> command acknowledgments
 
 ```javascript
-socket.on('printer:status', (data) => {
-  console.log('Printer status:', data);
-  // {
-  //   state: 'printing',
-  //   temperatures: { hotend: { current: 200, target: 200 } },
-  //   progress: { completion: 45.5, printTime: 3600 }
-  // }
-});
+socket.on('status:update', (status) => console.log(status));
+socket.on('temperature:update', (t) => console.log(t));
+socket.on('progress:update', (p) => console.log(p));
+socket.on('alert', (a) => console.warn(a));
 ```
 
-#### Temperature Updates
+### Client Events (sent)
+
+Subscriptions:
 
 ```javascript
-socket.on('printer:temperature', (data) => {
-  console.log('Temperature update:', data);
-  // {
-  //   hotend: { current: 199.8, target: 200 },
-  //   bed: { current: 59.5, target: 60 }
-  // }
-});
+socket.emit('subscribe:status');
+socket.emit('subscribe:temperature');
+// camera requires authentication
+socket.emit('subscribe:camera');
 ```
 
-#### Print Progress Updates
+Controls (auth + OPERATOR/ADMIN):
 
 ```javascript
-socket.on('printer:progress', (data) => {
-  console.log('Print progress:', data);
-  // {
-  //   jobId: 'job-uuid',
-  //   completion: 67.5,
-  //   printTime: 5400,
-  //   printTimeLeft: 2600
-  // }
-});
-```
-
-#### Job Status Changes
-
-```javascript
-socket.on('job:status', (data) => {
-  console.log('Job status changed:', data);
-  // {
-  //   jobId: 'job-uuid',
-  //   status: 'COMPLETED',
-  //   completedAt: '2024-01-01T12:00:00.000Z'
-  // }
-});
-```
-
-#### Error Events
-
-```javascript
-socket.on('printer:error', (data) => {
-  console.error('Printer error:', data);
-  // {
-  //   type: 'THERMAL_RUNAWAY',
-  //   message: 'Hotend thermal runaway detected',
-  //   severity: 'CRITICAL'
-  // }
-});
-```
-
-### Client Events (Sent)
-
-#### Subscribe to Updates
-
-```javascript
-socket.emit('subscribe', {
-  events: ['printer:status', 'printer:temperature', 'job:status']
-});
-```
-
-#### Send Printer Command
-
-```javascript
-socket.emit('printer:command', {
-  command: 'M105', // Get temperature
-  wait: true
-});
+socket.emit('control:pause');
+socket.emit('control:resume');
+socket.emit('control:stop');
+socket.emit('control:emergency');
+socket.emit('control:command', { gcode: 'M105' });
 ```
 
 ---

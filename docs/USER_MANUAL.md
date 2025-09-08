@@ -98,14 +98,14 @@ From the dashboard you can:
 
 ### Supported File Types
 
-LezerPrint supports multiple 3D file formats:
+Currently supported upload formats:
 
 | Format | Description | Use Case |
 |--------|-------------|----------|
 | **STL** | Standard 3D model format | Most common for 3D printing |
 | **G-code** | Printer instruction files | Pre-sliced models ready to print |
-| **OBJ** | 3D model with texture support | Complex models with materials |
-| **3MF** | Microsoft 3D format | Models with full metadata |
+
+Planned (not yet enabled in uploads): **OBJ**, **3MF**
 
 ### Uploading Files
 
@@ -128,7 +128,7 @@ LezerPrint supports multiple 3D file formats:
 ### File Organization
 
 #### Folder Structure
-- **Models** - Raw 3D model files (STL, OBJ, 3MF)
+- **Models** - Raw 3D model files (STL)
 - **G-code** - Sliced files ready for printing
 - **Archives** - Completed or old files
 - **Shared** - Files shared with other users
@@ -182,7 +182,7 @@ Click any file to see detailed information:
 
 ### Creating Print Jobs
 
-#### From 3D Models (STL/OBJ/3MF)
+#### From 3D Models (STL)
 1. **Select your model** from the files list
 2. **Click "Print"** button
 3. **Choose print profile** (material and quality settings)
@@ -641,8 +641,8 @@ M226        ; Wait for user input
 #### Upload Issues
 
 **Symptom**: File uploads fail
-- **Check file size** - Ensure under 50MB limit
-- **Verify file format** - Must be STL, G-code, OBJ, or 3MF
+ - **Check file size** - Ensure under 100MB limit (default)
+- **Verify file format** - Must be STL or G-code
 - **Check disk space** - Ensure sufficient storage available
 - **Try smaller file** - Test with a simpler model
 - **Clear browser cache** - Remove temporary files

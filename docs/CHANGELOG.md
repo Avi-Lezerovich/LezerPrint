@@ -19,10 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 🔄 Changed
 - Enhanced README with better structure and clarity
 - Improved project organization and documentation
+ - Updated docs to reflect actual implemented features (e.g., upload formats: STL/G-code)
 
 ### 🔧 Fixed
 - Documentation consistency across all files
 - Cross-references between documentation files
+ - Version requirements aligned (Node.js 20+; TanStack Query naming)
 
 ---
 
@@ -40,7 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Password Security** - bcrypt hashing with salt
 
 #### 📁 File Management System
-- **Multi-format Support** - STL, G-code, OBJ, and 3MF file uploads
+- **File Support** - STL and G-code uploads (OBJ/3MF planned)
 - **Intelligent Processing** - Automatic metadata extraction and validation
 - **Thumbnail Generation** - Visual previews for 3D models
 - **File Organization** - Folder-based organization system
@@ -131,7 +133,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **TypeScript 5.9.2** - Full type safety throughout
 - **Tailwind CSS 3.3.0** - Utility-first styling
 - **Framer Motion 12.23** - Smooth animations and transitions
-- **React Query 5.87** - Server state management
+- **TanStack Query 5.x** - Server state management
 - **Zustand 5.0.8** - Client state management
 - **Socket.io Client 4.8** - Real-time communication
 - **Three.js 0.180** - 3D model visualization
@@ -164,7 +166,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Load Testing Results
 - **Concurrent Users**: 100+ simultaneous users supported
 - **API Response Time**: < 200ms average response time
-- **File Upload**: 50MB files upload in < 30 seconds
+- **File Upload**: 100MB files upload in < 30 seconds (default limit)
 - **Real-time Updates**: < 100ms WebSocket latency
 - **Database Queries**: < 50ms average query time
 
@@ -191,15 +193,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### 3D Models
 - **STL** - Binary and ASCII formats
-- **OBJ** - Wavefront 3D object files
-- **3MF** - Microsoft 3D Manufacturing Format
+<!-- OBJ/3MF planned -->
 
 #### Print Files
 - **G-code** - Universal 3D printer instructions
 - **Custom Extensions** - Slicer-specific formats
 
 #### Maximum Specifications
-- **File Size**: 50MB default (configurable to 500MB+)
+- **File Size**: 100MB default (configurable)
 - **Model Complexity**: 10M+ triangles supported
 - **Concurrent Uploads**: 5 files simultaneously
 

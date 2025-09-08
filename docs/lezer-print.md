@@ -1,3 +1,6 @@
+# Status: Planning document (non-authoritative)
+Note: This document captures an end-to-end vision and includes planned features. For what exists today, see docs/ARCHITECTURE.md, docs/API_REFERENCE.md, and docs/USER_MANUAL.md. Upload support is limited to STL and G-code with a 100MB default size; OBJ/3MF are planned, not implemented.
+
 # Complete Specification - 3D Printer Management System
 
 ## 📋 Table of Contents
@@ -135,7 +138,7 @@ to prevent damage and material waste"
 #### File and Print Management
 **File Upload:**
 - Drag & Drop interface
-- Support for STL, GCODE, OBJ, 3MF
+- Support for STL and GCODE (OBJ/3MF planned)
 - Upload progress bar
 - File validation
 
@@ -829,69 +832,6 @@ Control → Calibration → Select Type → Run Process → Save Profile
 
 ---
 
-## 9. Development Milestones
-
-### Phase 1: MVP (3 weeks)
-**Goal:** Working basic system
-
-- [ ] Simple home page
-- [ ] Login system
-- [ ] Basic dashboard
-- [ ] File upload
-- [ ] Start/stop print
-- [ ] Real-time status
-
-### Phase 2: Core Features (4 weeks)
-**Goal:** Essential features
-
-- [ ] Demo Mode
-- [ ] Live camera
-- [ ] Axis control
-- [ ] History
-- [ ] Basic settings
-- [ ] Graphs
-
-### Phase 3: Advanced (4 weeks)
-**Goal:** Advanced features
-
-- [ ] Complete portfolio
-- [ ] Time-lapse
-- [ ] Analytics
-- [ ] Notifications
-- [ ] Advanced calibration
-- [ ] G-code terminal
-
-### Phase 4: Polish (3 weeks)
-**Goal:** Finished product
-
-- [ ] Animations and UX
-- [ ] PWA
-- [ ] AI Features
-- [ ] Optimization
-- [ ] Documentation
-- [ ] Testing
-
----
-
-## 10. Success Definition and Risks
-
-### 10.1 Technical KPIs
-- Average response time < 200ms
-- Zero critical failures
-- 99% uptime
-- Lighthouse score > 90
-
-### 10.2 Business KPIs
-- Interviewers impressed by Demo
-- Daily system usage
-- 50% time savings in management
-- 90% print success rate
-
-### 10.3 User Experience
-- SUS score > 80
-- Zero friction in basic operations
-- Less than 3 clicks for any action
-- 100% mobile friendly
 
 ### 10.4 Risks and Solutions
 
@@ -1048,79 +988,7 @@ print_jobs {
 }
 ```
 
-#### Files Table
-```sql
-files {
-  id: UUID (PK)
-  user_id: UUID (FK)
-  original_name: VARCHAR(255)
-  filename: VARCHAR(255)
-  file_path: TEXT
-  file_type: ENUM('stl', 'gcode', 'obj', '3mf')
-  file_size: BIGINT
-  upload_date: TIMESTAMP
-  metadata: JSON
-  thumbnail_path: TEXT
-  print_count: INTEGER DEFAULT 0
-}
-```
 
-#### Settings Table
-```sql
-settings {
-  id: UUID (PK)
-  category: VARCHAR(50)
-  key: VARCHAR(100)
-  value: JSON
-  user_id: UUID (FK) -- NULL for global settings
-  created_at: TIMESTAMP
-  updated_at: TIMESTAMP
-}
-```
-
-#### Notifications Table
-```sql
-notifications {
-  id: UUID (PK)
-  user_id: UUID (FK)
-  type: ENUM('info', 'warning', 'error', 'success')
-  title: VARCHAR(255)
-  message: TEXT
-  is_read: BOOLEAN DEFAULT FALSE
-  created_at: TIMESTAMP
-  metadata: JSON
-}
-```
-
-### 13.2 Monitoring Tables
-
-#### Temperature Logs
-```sql
-temperature_logs {
-  id: UUID (PK)
-  job_id: UUID (FK)
-  hotend_temp: FLOAT
-  hotend_target: FLOAT
-  bed_temp: FLOAT
-  bed_target: FLOAT
-  chamber_temp: FLOAT
-  timestamp: TIMESTAMP
-}
-```
-
-#### System Events
-```sql
-system_events {
-  id: UUID (PK)
-  event_type: VARCHAR(50)
-  description: TEXT
-  severity: ENUM('low', 'medium', 'high', 'critical')
-  metadata: JSON
-  timestamp: TIMESTAMP
-}
-```
-
----
 
 ## 14. Security Considerations
 
@@ -1223,38 +1091,7 @@ Feature Branch → Pull Request → Code Review → Automated Tests → Merge �
 - **Staging** - Pre-production testing
 - **Production** - Live system
 
-### 17.3 CI/CD Pipeline
-```yaml
-# GitHub Actions example
-name: CI/CD Pipeline
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
 
-jobs:
-  test:
-    - Install dependencies
-    - Run linting
-    - Run unit tests
-    - Run integration tests
-    - Security scanning
-    
-  build:
-    - Build frontend
-    - Build backend
-    - Create Docker images
-    - Push to registry
-    
-  deploy:
-    - Deploy to staging (develop branch)
-    - Deploy to production (main branch)
-    - Run smoke tests
-    - Notify team
-```
-
-### 17.4 Infrastructure as Code
 - **Docker Containers** for consistent deployments
 - **Docker Compose** for local development
 - **Kubernetes** for production orchestration (optional)

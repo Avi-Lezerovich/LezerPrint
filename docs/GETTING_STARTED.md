@@ -8,7 +8,7 @@
 
 Before starting, ensure you have these installed:
 
-- [ ] **Node.js 18+** - [Download here](https://nodejs.org/)
+- [ ] **Node.js 20+** - [Download here](https://nodejs.org/)
 - [ ] **npm or yarn** - Comes with Node.js
 - [ ] **Docker Desktop** - [Download here](https://www.docker.com/products/docker-desktop/)
 - [ ] **Git** - [Download here](https://git-scm.com/)
@@ -17,7 +17,7 @@ Before starting, ensure you have these installed:
 
 ```bash
 # Verify installations
-node --version    # Should be 18.0.0 or higher
+node --version    # Should be 20.0.0 or higher
 npm --version     # Should be 8.0.0 or higher
 docker --version  # Should be 20.0.0 or higher
 git --version     # Should be 2.30.0 or higher
@@ -265,7 +265,7 @@ NODE_ENV=development
 FRONTEND_URL="http://localhost:3000"
 
 # File uploads
-MAX_FILE_SIZE=50000000  # 50MB
+MAX_FILE_SIZE=100000000  # 100MB (default)
 UPLOAD_DIR="./uploads"
 
 # Printer (optional - for real hardware)

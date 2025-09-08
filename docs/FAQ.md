@@ -78,7 +78,7 @@ For detailed instructions, see our [Getting Started Guide](GETTING_STARTED.md).
 ### What are the system requirements?
 
 **Minimum:**
-- Node.js 18+
+- Node.js 20+
 - 4GB RAM
 - 20GB storage
 - Docker Desktop
@@ -113,7 +113,7 @@ Our automated setup script handles most of the complexity!
 ### What can I do with LezerPrint?
 
 **Core Features:**
-- Upload and manage 3D model files (STL, G-code, OBJ, 3MF)
+- Upload and manage 3D files (STL and G-code; OBJ/3MF planned)
 - Start, pause, resume, and cancel print jobs
 - Real-time monitoring with temperature tracking
 - Live camera feeds for remote monitoring
@@ -248,8 +248,8 @@ See our [Troubleshooting Guide](TROUBLESHOOTING.md) for detailed solutions.
 ### File uploads are failing - what's wrong?
 
 **Check these issues:**
-1. **File size**: Maximum 50MB by default
-2. **File type**: Must be STL, G-code, OBJ, or 3MF
+1. **File size**: Maximum 100MB by default (configurable)
+2. **File type**: Must be STL or G-code
 3. **Disk space**: Ensure sufficient storage available
 4. **Permissions**: Check upload directory permissions
 
@@ -466,7 +466,7 @@ Contact the maintainers for commercial inquiries.
 **A:** Yes! Once installed, LezerPrint works completely offline. Internet is only needed for initial installation.
 
 ### Q: Is there a maximum file size for uploads?
-**A:** Default limit is 50MB, but this can be configured higher if needed. Large files may take longer to process.
+**A:** Default limit is 100MB (configurable). Large files may take longer to process.
 
 ### Q: Can I backup my LezerPrint data?
 **A:** Yes! All data is stored locally and can be backed up using standard database and file backup procedures.

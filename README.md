@@ -59,7 +59,7 @@ open http://localhost:3000
 ### 🖨️ **Core Printer Management**
 - Real-time printer control and monitoring
 - Complete G-code command support
-- Multi-format file uploads (STL, G-code, OBJ, 3MF)
+- File uploads for STL and G-code (OBJ/3MF planned)
 - Intelligent print queue management
 
 ### 📊 **Advanced Analytics**
@@ -88,10 +88,9 @@ open http://localhost:3000
 - **Next.js 15** - React framework with App Router
 - **TypeScript** - Type-safe development
 - **Tailwind CSS** - Modern utility-first styling
-- **React Query** - Intelligent server state management
+- **TanStack Query** - Intelligent server state management
 - **Socket.io** - Real-time communication
 - **Three.js** - 3D model visualization
-
 ### **Backend Power**
 - **Node.js** - High-performance runtime
 - **Express.js** - Robust web framework

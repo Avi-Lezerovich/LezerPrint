@@ -17,6 +17,7 @@
 - [Testing Strategy](#-testing-strategy)
 - [Performance Optimization](#-performance-optimization)
 - [Security Guidelines](#-security-guidelines)
+- [Accessibility](#-accessibility)
 - [Debugging Techniques](#-debugging-techniques)
 
 ---
@@ -43,7 +44,7 @@ LezerPrint/
 - Next.js 15         // React framework with App Router
 - TypeScript         // Type safety
 - Tailwind CSS       // Utility-first styling
-- React Query        // Server state management
+- TanStack Query     // Server state management
 - Zustand           // Client state management
 - Socket.io Client   // Real-time communication
 - Framer Motion     // Animations
@@ -72,7 +73,7 @@ LezerPrint/
 - **Feature-First Organization**: Components grouped by functionality
 - **Presentation/Container Pattern**: Separation of logic and UI
 - **Hook-Based State**: Custom hooks for shared logic
-- **Server State Separation**: React Query for API data
+- **Server State Separation**: TanStack Query for API data
 
 #### Backend Architecture
 - **Layered Architecture**: Routes → Controllers → Services → Database
@@ -89,7 +90,7 @@ LezerPrint/
 
 ```bash
 # Required software
-Node.js 18+
+Node.js 20+
 Docker Desktop
 Git
 VS Code (recommended)
@@ -140,6 +141,8 @@ Create development environment files:
 DATABASE_URL="postgresql://developer:devpass123@localhost:5432/lezerprint_dev"
 JWT_SECRET="dev-secret-key"
 NODE_ENV="development"
+PORT=3001
+FRONTEND_URL="http://localhost:3000"
 ```
 
 **frontend/.env.local**
@@ -547,10 +550,10 @@ export const usePrinterStore = create<PrinterStore>((set) => ({
 }));
 ```
 
-### Server State (React Query)
+### Server State (TanStack Query)
 
 ```typescript
-// Use React Query for server state
+// Use TanStack Query for server state
 export function useFiles(filters?: FileFilters) {
   return useQuery({
     queryKey: ['files', filters],
@@ -579,22 +582,34 @@ export function useUploadFile() {
 ### Real-Time State (WebSocket)
 
 ```typescript
-// WebSocket integration with React Query
+// WebSocket integration with TanStack Query
 export function useRealtimeUpdates() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_WS_URL);
 
-    socket.on('printer:status', (status) => {
-      queryClient.setQueryData(['printer', 'status'], status);
+    // Initial connection status
+    socket.on('status', (status) => {
+      queryClient.setQueryData(['connection', 'status'], status);
     });
 
-    socket.on('job:progress', (progress) => {
-      queryClient.setQueryData(['job', progress.jobId], (old: PrintJob) => ({
-        ...old,
-        progress: progress.completion,
+    // Print lifecycle events
+    socket.on('print:started', (job) => {
+      queryClient.invalidateQueries(['jobs']);
+      queryClient.setQueryData(['jobs', job.id], job);
+    });
+
+    socket.on('print:progress', ({ jobId, progress }) => {
+      queryClient.setQueryData(['jobs', jobId], (old: any) => ({
+        ...(old || {}),
+        progress,
       }));
+    });
+
+    socket.on('print:completed', ({ jobId, job }) => {
+      queryClient.invalidateQueries(['jobs']);
+      queryClient.setQueryData(['jobs', jobId], job);
     });
 
     return () => socket.disconnect();
@@ -617,9 +632,6 @@ router.get('/status', authenticateToken, getPrinterStatus);
 
 // POST /api/printer/command
 router.post('/command', authenticateToken, requireOperator, sendCommand);
-
-// PUT /api/printer/settings
-router.put('/settings', authenticateToken, requireAdmin, updateSettings);
 
 export default router;
 ```
@@ -688,7 +700,7 @@ export class PrintJobService {
     });
 
     // Emit WebSocket event
-    this.io.emit('job:created', { job });
+  this.io.emit('print:started', { job });
 
     return job;
   }
@@ -1010,7 +1022,7 @@ export class PrintJobService {
 const updateSettingsSchema = z.object({
   printerName: z.string().min(1).max(50),
   maxFileSize: z.number().min(1).max(100 * 1024 * 1024), // 100MB
-  allowedFileTypes: z.array(z.enum(['STL', 'GCODE', 'OBJ', '3MF'])),
+  allowedFileTypes: z.array(z.enum(['STL', 'GCODE'])),
 });
 
 export async function updateSettings(req: Request, res: Response) {
@@ -1063,11 +1075,11 @@ const upload = multer({
     },
   }),
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB
+    fileSize: 100 * 1024 * 1024, // 100MB default
     files: 1,
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['stl', 'gcode', 'obj', '3mf'];
+  const allowedTypes = ['stl', 'gcode'];
     const ext = path.extname(file.originalname).toLowerCase().slice(1);
     
     if (allowedTypes.includes(ext)) {
@@ -1078,6 +1090,21 @@ const upload = multer({
   },
 });
 ```
+
+---
+
+## ♿ Accessibility
+
+Keep the UI inclusive and keyboard-friendly:
+
+- Semantic HTML and labels: use native elements and associate labels/aria-labels appropriately
+- Keyboard access: ensure focusable controls, visible focus rings, and logical tab order
+- Color contrast: meet WCAG 2.1 AA; don’t rely on color alone to convey state
+- Motion sensitivity: respect prefers-reduced-motion; avoid large auto animations when set
+- Live updates: use aria-live regions for status messages like print progress
+- Forms: provide inline error messages tied to inputs via aria-describedby
+
+Tip: Add lightweight a11y checks to PRs (axe DevTools in browser, React Testing Library queries by role/name).
 
 ---
 
@@ -1236,7 +1263,7 @@ export function logRequests(req: Request, res: Response, next: NextFunction) {
 ### Learning Resources
 - [**Next.js Documentation**](https://nextjs.org/docs)
 - [**Prisma Documentation**](https://www.prisma.io/docs)
-- [**React Query Documentation**](https://tanstack.com/query)
+- [**TanStack Query Documentation**](https://tanstack.com/query)
 - [**Tailwind CSS Documentation**](https://tailwindcss.com/docs)
 
 ### Code Quality

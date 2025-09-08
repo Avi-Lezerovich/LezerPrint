@@ -61,7 +61,7 @@ graph TB
     BE <--> WS
     
     BE --> DB[(🗄️ PostgreSQL<br/>Primary Database)]
-    BE --> Redis[(🔴 Redis<br/>Cache & Sessions)]
+  BE --> Redis[(🔴 Redis<br/>Cache & Sessions — optional)]
     BE --> FS[📁 File Storage<br/>Local/S3]
     
     BE --> Printer[🖨️ 3D Printer<br/>Serial/USB]
@@ -139,42 +139,41 @@ Axios 1.11.0        // HTTP client
 
 ```
 frontend/src/
-├── app/                    # Next.js App Router
-│   ├── (auth)/            # Authentication routes
-│   │   ├── login/         # Login page
-│   │   └── register/      # Registration page
-│   ├── (dashboard)/       # Main application
-│   │   ├── analytics/     # Analytics pages
-│   │   ├── files/         # File management
-│   │   ├── jobs/          # Print job management
-│   │   ├── camera/        # Live monitoring
-│   │   ├── terminal/      # G-code terminal
-│   │   └── settings/      # Configuration
-│   ├── api/               # API routes (Next.js)
-│   ├── globals.css        # Global styles
-│   ├── layout.tsx         # Root layout
-│   └── page.tsx           # Home page
-├── components/            # Reusable components
-│   ├── analytics/         # Chart and metrics components
-│   ├── camera/           # Camera and monitoring
-│   ├── printer/          # Printer control components
-│   ├── settings/         # Configuration components
-│   └── ui/               # Base UI components
-├── lib/                  # Utilities and configurations
-│   ├── api.ts            # API client configuration
-│   ├── auth.ts           # Authentication utilities
-│   ├── utils.ts          # General utilities
-│   └── validations.ts    # Form validation schemas
-├── services/             # API service layer
-│   ├── api/              # API client methods
-│   ├── socket/           # WebSocket handling
-│   └── storage/          # Local storage utilities
-├── stores/               # Zustand state stores
-│   ├── auth.ts           # Authentication state
-│   ├── printer.ts        # Printer state
-│   └── ui.ts             # UI state
-└── styles/              # Additional styles
-    └── components.css    # Component-specific styles
+├── app/                      # Next.js App Router
+│   ├── (auth)/               # Authentication routes
+│   │   ├── login/
+│   │   └── register/
+│   ├── (dashboard)/          # Protected routes
+│   │   ├── files/
+│   │   ├── history/
+│   │   └── printer/
+│   ├── (public)/             # Public routes (if any)
+│   ├── api/                  # App route API endpoints (if used)
+│   ├── layout.tsx            # Root layout
+│   ├── page.tsx              # Home page
+│   └── providers.tsx         # App-wide providers
+├── components/               # Reusable components
+│   ├── 3d/
+│   ├── analytics/
+│   ├── camera/
+│   ├── charts/
+│   ├── layouts/
+│   ├── printer/
+│   ├── settings/
+│   └── ui/
+├── services/
+│   ├── api.ts
+│   ├── authService.ts
+│   ├── cameraService.ts
+│   └── historyService.ts
+├── stores/
+│   └── authStore.ts
+├── lib/
+│   └── utils.ts
+├── styles/
+│   └── globals.css
+├── types/
+└── config/ (and public/)
 ```
 
 ### Component Architecture
@@ -216,7 +215,7 @@ interface AppState {
   isConnected: boolean;
 }
 
-// Server State (React Query)
+// Server State (TanStack Query)
 // - File listings and details
 // - Print job data
 // - Analytics data
@@ -287,41 +286,33 @@ SerialPort 13.0.0    // Printer communication
 
 ```
 backend/src/
-├── server.ts              # Application entry point
-├── api/                   # API route handlers
-│   └── routes/           # Organized by feature
-│       ├── auth.routes.ts
+├── server.ts                 # App entry, Express + Socket.IO wiring
+├── api/
+│   └── routes/               # API routes (mounted under /api/*)
+│       ├── analytics.routes.ts
 │       ├── files.routes.ts
-│       ├── printer.routes.ts
 │       ├── jobs.routes.ts
-│       └── analytics.routes.ts
-├── controllers/           # Request/response handling
-│   ├── auth.controller.ts
-│   ├── files.controller.ts
-│   └── printer.controller.ts
-├── services/             # Business logic layer
-│   ├── auth/            # Authentication services
-│   ├── files/           # File management
-│   ├── printer/         # Printer communication
-│   ├── jobs/            # Print job management
-│   ├── analytics/       # Data analysis
-│   └── notifications/   # Notification handling
-├── middleware/          # Express middleware
-│   ├── auth.middleware.ts
-│   ├── validation.middleware.ts
-│   └── error.middleware.ts
-├── lib/                 # Utilities and database
-│   ├── prisma.ts        # Database client
-│   ├── redis.ts         # Cache client
-│   └── logger.ts        # Logging utilities
-├── websocket/           # Socket.io handlers
-│   ├── printer.handlers.ts
-│   ├── job.handlers.ts
-│   └── camera.handlers.ts
-└── types/               # TypeScript type definitions
-    ├── api.types.ts
-    ├── printer.types.ts
-    └── job.types.ts
+│       └── printer.routes.ts
+├── routes/                    # Legacy non-/api routes
+│   ├── auth.routes.ts         # /api/auth
+│   ├── camera.routes.ts       # /api/camera
+│   ├── history.routes.ts      # /api/history
+│   └── terminal.routes.ts     # /api/terminal
+├── controllers/
+│   └── auth.controller.ts
+├── services/
+│   ├── printer/PrinterService.ts
+│   ├── files/FileUploadService.ts
+│   ├── gcodeTerminalService.ts
+│   ├── cameraService.ts
+│   ├── printHistoryService.ts
+│   └── analytics/analyticsService.ts
+├── middleware/
+│   └── auth.middleware.ts
+├── lib/
+│   └── prisma.ts
+└── websocket/
+  └── WebSocketServer.ts     # Alternative socket server (not wired by default)
 ```
 
 ### Service Layer Design
@@ -368,23 +359,34 @@ class FileService {
 
 ### API Design Patterns
 
-#### RESTful Endpoints
+#### RESTful Endpoints (implemented)
 
 ```typescript
-// Resource-based URLs
-GET    /api/files              # List files
-POST   /api/files              # Create file
-GET    /api/files/:id          # Get file
-PUT    /api/files/:id          # Update file
-DELETE /api/files/:id          # Delete file
+// Files
+GET    /api/files                   // List files (pagination supported)
+GET    /api/files/:id               // File details
+POST   /api/files/upload            // Upload (multipart/form-data, field: file)
+GET    /api/files/:id/download      // Download
+DELETE /api/files/:id               // Delete
 
-// Nested resources
-GET    /api/files/:id/jobs     # Get jobs for file
-POST   /api/files/:id/print    # Start print from file
+// Jobs
+GET    /api/jobs                    // List jobs
+GET    /api/jobs/:id                // Job details
+POST   /api/jobs/start              // Start a job (OPERATOR/ADMIN)
+POST   /api/jobs/:id/pause          // Pause (OPERATOR/ADMIN)
+POST   /api/jobs/:id/resume         // Resume (OPERATOR/ADMIN)
+POST   /api/jobs/:id/cancel         // Cancel (OPERATOR/ADMIN)
 
-// Action-based endpoints
-POST   /api/printer/home       # Home printer
-POST   /api/printer/emergency-stop  # Emergency stop
+// Printer controls (OPERATOR/ADMIN)
+GET    /api/printer/status
+POST   /api/printer/command
+POST   /api/printer/home
+POST   /api/printer/move
+POST   /api/printer/temperature
+POST   /api/printer/emergency-stop
+POST   /api/printer/pause
+POST   /api/printer/resume
+POST   /api/printer/cancel
 ```
 
 #### Response Format
@@ -586,56 +588,41 @@ await prisma.$transaction(async (tx) => {
 ### WebSocket Architecture
 
 ```typescript
-// Server-side Socket.io setup
+// Server-side Socket.IO (single namespace)
 import { Server } from 'socket.io';
 
 const io = new Server(httpServer, {
-  cors: {
-    origin: process.env.FRONTEND_URL,
-    methods: ["GET", "POST"]
-  },
+  cors: { origin: process.env.FRONTEND_URL || 'http://localhost:3000', methods: ['GET','POST'] },
   transports: ['websocket', 'polling']
 });
 
-// Namespace organization
-const printerNamespace = io.of('/printer');
-const jobNamespace = io.of('/jobs');
-const cameraNamespace = io.of('/camera');
-
-// Authentication middleware
-io.use(async (socket, next) => {
-  const token = socket.handshake.auth.token;
-  const user = await validateToken(token);
-  if (user) {
-    socket.userId = user.id;
-    socket.userRole = user.role;
-    next();
-  } else {
-    next(new Error('Authentication failed'));
-  }
+io.on('connection', (socket) => {
+  console.log('Client connected', socket.id);
+  socket.emit('status', { connected: true });
 });
+
+// Services emit domain events, e.g.:
+io.emit('print:started', job);
+io.emit('print:progress', progress);
+io.emit('print:completed', payload);
+io.emit('camera:frame', { frame: base64Jpeg });
+io.emit('analytics:update', data);
 ```
 
 ### Event System
 
-#### Printer Events
+#### Event Examples
 ```typescript
-// Server emits to clients
-socket.emit('printer:status', {
-  state: 'printing',
-  temperatures: {
-    hotend: { current: 200, target: 200 },
-    bed: { current: 60, target: 60 }
-  },
-  position: { x: 100, y: 100, z: 50 },
-  progress: { completion: 45.5, timeLeft: 3600 }
-});
+// Server -> Client
+io.emit('status:update', { state: 'printing', position: { x: 100, y: 100, z: 50 } });
+io.emit('temperature:update', { hotend: { actual: 200, target: 200 }, bed: { actual: 60, target: 60 } });
+io.emit('progress:update', { jobId: 'uuid', progress: 67.5 });
+io.emit('alert', { type: 'warning', title: 'Bed temp low', timestamp: Date.now() });
+io.emit('camera:frame', { frame: 'data:image/jpeg;base64,...' });
 
-// Client emits to server
-socket.emit('printer:command', {
-  command: 'G28',
-  wait: true
-});
+// Client subscribes
+socket.on('status:update', cb);
+socket.on('progress:update', cb);
 ```
 
 #### Job Events
@@ -692,24 +679,27 @@ sequenceDiagram
 ### File Upload Architecture
 
 ```typescript
-// Multer configuration for file uploads
-const upload = multer({
-  storage: diskStorage({
-    destination: './uploads',
-    filename: (req, file, cb) => {
-      const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-      const ext = path.extname(file.originalname);
-      cb(null, `${uniqueName}${ext}`);
-    }
-  }),
-  limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB
-    files: 1
+// Multer configuration (as implemented)
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const subfolder = ['.gcode', '.gco', '.g'].includes(ext) ? 'gcode' : 'stl';
+    cb(null, path.join(process.cwd(), 'uploads', subfolder));
   },
+  filename: (req, file, cb) => {
+    const id = crypto.randomUUID();
+    const base = path.basename(file.originalname, path.extname(file.originalname)).replace(/[^a-zA-Z0-9.-]/g, '_');
+    cb(null, `${base}-${id}${path.extname(file.originalname)}`);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE || '100000000') }, // 100MB default
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['stl', 'gcode', 'obj', '3mf'];
-    const ext = path.extname(file.originalname).toLowerCase().slice(1);
-    cb(null, allowedTypes.includes(ext));
+    const allowed = ['.stl', '.gcode', '.gco', '.g'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(allowed.includes(ext) ? null : new Error('Unsupported file type (STL, G-code only)'), allowed.includes(ext));
   }
 });
 ```
@@ -744,15 +734,12 @@ class FileProcessor {
 
 #### Local Storage
 ```typescript
-// File system organization
+// File system organization (as used)
 uploads/
-├── files/           # Original uploaded files
-│   ├── stl/        # STL models
-│   ├── gcode/      # G-code files
-│   └── obj/        # OBJ models
-├── thumbnails/     # Generated thumbnails
-├── processed/      # Processed/converted files
-└── temp/          # Temporary upload staging
+├── stl/             # STL models
+├── gcode/           # G-code files
+├── thumbnails/      # Generated thumbnails
+└── temp/            # Temporary staging
 ```
 
 #### Cloud Storage (S3 Compatible)
@@ -810,66 +797,47 @@ sequenceDiagram
 ### JWT Implementation
 
 ```typescript
-// JWT token generation
-function generateTokens(user: User): TokenPair {
-  const payload = {
-    userId: user.id,
-    email: user.email,
-    role: user.role
-  };
-  
-  const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: '15m',
-    issuer: 'lezerprint-api',
-    audience: 'lezerprint-client'
-  });
-  
-  const refreshToken = jwt.sign(
-    { userId: user.id, type: 'refresh' },
-    process.env.JWT_REFRESH_SECRET,
-    { expiresIn: '7d' }
-  );
-  
+// JWT token generation (current implementation)
+function generateTokens(userId: string, role: string) {
+  const accessToken = jwt.sign({ userId, role }, process.env.JWT_SECRET!, { expiresIn: '15m' });
+  const refreshToken = jwt.sign({ userId }, process.env.JWT_SECRET!, { expiresIn: '7d' });
   return { accessToken, refreshToken };
 }
 
-// JWT validation middleware
-function authenticateToken(req: Request, res: Response, next: NextFunction) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  
-  if (!token) {
-    return res.status(401).json({ error: 'Access token required' });
-  }
-  
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(403).json({ error: 'Invalid or expired token' });
-    }
-    req.user = decoded;
+// Auth middleware (simplified)
+async function authenticateToken(req: Request, res: Response, next: NextFunction) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Access token required' });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId }, select: { id: true, role: true }});
+    if (!user) return res.status(401).json({ error: 'Invalid token - user not found' });
+    (req as any).user = { userId: user.id, role: user.role };
     next();
-  });
+  } catch (e) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
 }
 ```
+```sql
+-- Example DDL (Prisma manages schema; shown for illustration)
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email VARCHAR(255) UNIQUE NOT NULL,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role user_role DEFAULT 'VIEWER',
+  is_active BOOLEAN DEFAULT true,
+  preferences JSONB DEFAULT '{}',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  last_login_at TIMESTAMP
+);
 
-### Role-Based Access Control
-
-```typescript
-enum UserRole {
-  ADMIN = 'ADMIN',
-  OPERATOR = 'OPERATOR',
-  VIEWER = 'VIEWER'
-}
-
-// Permission matrix
-const permissions = {
-  [UserRole.ADMIN]: [
-    'users:read', 'users:write', 'users:delete',
-    'printers:read', 'printers:write', 'printers:control',
-    'files:read', 'files:write', 'files:delete',
-    'jobs:read', 'jobs:write', 'jobs:control',
-    'settings:read', 'settings:write'
-  ],
+-- Indexes for performance
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_username ON users(username);
+```
   [UserRole.OPERATOR]: [
     'printers:read', 'printers:control',
     'files:read', 'files:write',
@@ -1037,32 +1005,12 @@ $$ LANGUAGE plpgsql;
 
 #### API Optimization
 ```typescript
-// Response compression
+// Optional examples (not enabled by default in the repo)
 import compression from 'compression';
-app.use(compression());
-
-// Request rate limiting
 import rateLimit from 'express-rate-limit';
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  standardHeaders: true,
-  legacyHeaders: false
-});
-app.use('/api/', limiter);
 
-// Response pagination
-interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    pages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-}
+app.use(compression());
+app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true }));
 ```
 
 ---
@@ -1088,11 +1036,11 @@ interface PaginatedResponse<T> {
 | Solution | Pros | Cons | Use Case |
 |----------|------|------|---------|
 | **Zustand** | Simple, TypeScript-first, minimal boilerplate | Smaller ecosystem | Client state |
-| **React Query** | Server state specialization, caching, background updates | Learning curve | Server state |
+| **TanStack Query** | Server state specialization, caching, background updates | Learning curve | Server state |
 | **Redux Toolkit** | Mature, predictable, DevTools | Boilerplate, complexity | Complex state |
 | **Context API** | Built-in, simple | Performance issues, prop drilling | Theme, auth |
 
-**Decision**: Zustand + React Query for optimal developer experience and performance.
+**Decision**: Zustand + TanStack Query for optimal developer experience and performance.
 
 ### Backend Technology Choices
 

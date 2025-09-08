@@ -2,6 +2,8 @@
 
 *Complete guide for deploying LezerPrint to production environments*
 
+Note: The repository ships with `docker-compose.dev.yml` for development. Production examples in this guide (nginx, PM2, Kubernetes) are reference implementations and may require adaptation; they are not included as ready-made files in the repo.
+
 ---
 
 ## 📖 Table of Contents

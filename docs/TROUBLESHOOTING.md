@@ -46,7 +46,7 @@ docker-compose logs --tail=50
 ### System Requirements Check
 
 ```bash
-# Check Node.js version (requires 18+)
+# Check Node.js version (requires 20+)
 node --version
 
 # Check npm version
@@ -72,7 +72,7 @@ ls -la backend/.env frontend/.env.local
 cd backend && npx prisma db pull
 
 # Test API connectivity
-curl -I http://localhost:3001/api/status
+curl -I http://localhost:3001/api/health
 ```
 
 ---
@@ -272,11 +272,7 @@ Check backend CORS configuration:
 ```typescript
 // backend/src/server.ts
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    process.env.FRONTEND_URL
-  ],
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true
 }));
 ```
@@ -330,7 +326,7 @@ const upload = multer({
 });
 
 # Check supported file types
-echo "Supported: STL, G-code, OBJ, 3MF"
+echo "Supported: STL, G-code"
 ```
 
 ### Issue: Thumbnail Generation Fails

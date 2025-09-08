@@ -50,7 +50,7 @@ We welcome all types of contributions:
 
 ### Prerequisites
 
-- **Node.js 18+** - [Download here](https://nodejs.org/)
+- **Node.js 20+** - [Download here](https://nodejs.org/)
 - **Docker Desktop** - [Download here](https://www.docker.com/products/docker-desktop/)
 - **Git** - [Download here](https://git-scm.com/)
 - **Visual Studio Code** (recommended) - [Download here](https://code.visualstudio.com/)

@@ -24,7 +24,7 @@
 | Component | Requirement | Recommended |
 |-----------|-------------|-------------|
 | **OS** | Windows 10, macOS 10.15, Ubuntu 18.04+ | Latest versions |
-| **Node.js** | 18.0.0+ | 20.0.0+ |
+| **Node.js** | 20.0.0+ | 20.0.0+ |
 | **RAM** | 4GB | 8GB+ |
 | **Storage** | 2GB free space | 10GB+ |
 | **Docker** | 20.0.0+ | Latest |
@@ -32,7 +32,7 @@
 ### Software Dependencies
 
 #### Required
-- **Node.js** 18+ with npm 8+
+- **Node.js** 20+ with npm 10+
 - **Docker Desktop** (for database)
 - **Git** (for cloning)
 
@@ -239,11 +239,8 @@ sudo crontab -e
 git clone https://github.com/Avi-Lezerovich/LezerPrint.git
 cd LezerPrint
 
-# Start all services with Docker
+# Start database services for development (Postgres, Redis)
 docker-compose -f docker-compose.dev.yml up -d
-
-# Build and start application containers
-docker-compose -f docker-compose.yml up --build
 ```
 
 ### Production Docker Setup
@@ -351,9 +348,9 @@ JWT_EXPIRES_IN="7d"
 SESSION_SECRET="your-session-secret"
 
 # File Upload
-MAX_FILE_SIZE=50000000  # 50MB in bytes
+MAX_FILE_SIZE=100000000  # 100MB in bytes (default)
 UPLOAD_DIR="./uploads"
-ALLOWED_FILE_TYPES="stl,gcode,obj,3mf"
+ALLOWED_FILE_TYPES="stl,gcode"
 
 # Printer Communication (for real hardware)
 PRINTER_PORT="/dev/ttyUSB0"  # Linux/Mac
@@ -398,8 +395,8 @@ NEXT_PUBLIC_ANALYTICS_ENABLED=true
 NEXT_PUBLIC_TIMELAPSE_ENABLED=true
 
 # Upload Configuration
-NEXT_PUBLIC_MAX_FILE_SIZE=50000000  # 50MB
-NEXT_PUBLIC_SUPPORTED_FORMATS="stl,gcode,obj,3mf"
+NEXT_PUBLIC_MAX_FILE_SIZE=100000000  # 100MB
+NEXT_PUBLIC_SUPPORTED_FORMATS="stl,gcode"
 
 # UI Configuration
 NEXT_PUBLIC_THEME="dark"  # light | dark | system
@@ -500,7 +497,7 @@ curl http://localhost:3001/api/health
 # }
 
 # Check database connection
-curl http://localhost:3001/api/status
+curl http://localhost:3001/api/health
 
 # Check frontend
 curl http://localhost:3000/api/health

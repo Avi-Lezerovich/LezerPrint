@@ -40,7 +40,7 @@
 ## 📸 Features
 
 ### 🖨️ **Core Printer Management**
-- **File Upload & Management** - Support for STL, G-code, OBJ, and 3MF files
+- **File Upload & Management** - Support for STL and G-code (OBJ/3MF planned)
 - **Print Job Control** - Start, pause, resume, and cancel prints remotely
 - **Real-Time Status** - Live updates on print progress and printer state
 - **Queue Management** - Intelligent job scheduling and prioritization
@@ -104,7 +104,7 @@ open http://localhost:3000
 - **Next.js 15** - React framework with App Router
 - **TypeScript** - Type-safe development
 - **Tailwind CSS** - Utility-first styling
-- **React Query** - Server state management
+- **TanStack Query** - Server state management
 - **Zustand** - Client state management
 - **Framer Motion** - Smooth animations
 - **Recharts** - Data visualization

@@ -2,6 +2,8 @@
 
 *Comprehensive security practices and guidelines for LezerPrint*
 
+Note: This guide includes best-practice examples. Some sections (e.g., MFA, token blacklisting, advanced encryption) describe recommended patterns that are not fully implemented in the current codebase. Where there is a conflict, prefer actual code behavior documented in API_REFERENCE and ARCHITECTURE.
+
 ---
 
 ## 📖 Table of Contents
@@ -830,12 +832,11 @@ export class FileValidator {
     'text/plain', // G-code files
     'application/octet-stream', // Binary STL
     'model/stl', // STL MIME type
-    'model/obj', // OBJ files
-    'model/3mf' // 3MF files
+  // Future formats could be added with careful validation (OBJ/3MF)
   ]);
 
   private allowedExtensions = new Set([
-    '.stl', '.gcode', '.obj', '.3mf'
+  '.stl', '.gcode'
   ]);
 
   // Magic number validation for file types
@@ -851,8 +852,8 @@ export class FileValidator {
     const errors: string[] = [];
 
     // Check file size
-    if (file.size > 50 * 1024 * 1024) { // 50MB
-      errors.push('File size exceeds 50MB limit');
+    if (file.size > 100 * 1024 * 1024) { // 100MB default
+      errors.push('File size exceeds 100MB limit');
     }
 
     // Check extension
@@ -898,10 +899,7 @@ export class FileValidator {
         return buffer.includes(this.magicNumbers.gcode) ||
                buffer.toString().includes('G0') ||
                buffer.toString().includes('G1');
-      case '.obj':
-        return buffer.includes(this.magicNumbers.obj);
-      case '.3mf':
-        return buffer.includes(this.magicNumbers.threemf);
+  // Future: add robust validation for OBJ/3MF if enabled
       default:
         return false;
     }
