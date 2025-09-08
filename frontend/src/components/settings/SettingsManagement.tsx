@@ -8,18 +8,18 @@ import {
   Settings, 
   Printer, 
   Thermometer, 
-  Bell, 
-  Camera, 
   Save, 
-  RotateCcw, 
   Download, 
-  Upload,
-  Wifi,
-  Palette,
-  Shield,
-  Zap,
-  Monitor
+  Shield
 } from 'lucide-react';
+
+// Import new component modules
+import PrinterSettings from './PrinterSettings';
+import TemperatureProfiles, { type TemperatureProfile } from './TemperatureProfiles';
+import UserPreferences from './UserPreferences';
+import CalibrationSettings from './CalibrationSettings';
+import BackupSettings from './BackupSettings';
+import ProfileModal from './ProfileModal';
 
 interface PrinterSettings {
   printer: {
@@ -76,21 +76,6 @@ interface PrinterSettings {
   };
 }
 
-interface TemperatureProfile {
-  id: string;
-  name: string;
-  material: string;
-  hotendTemp: number;
-  bedTemp: number;
-  fanSpeed: number;
-  printSpeed: number;
-  retraction: {
-    distance: number;
-    speed: number;
-  };
-  notes?: string;
-  isDefault?: boolean;
-}
 
 const defaultProfiles: TemperatureProfile[] = [
   {
@@ -399,171 +384,71 @@ export default function SettingsManagement({ demoMode = false }: SettingsManagem
           >
         {/* Printer Settings Tab */}
         {activeTab === 'printer' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Printer Name
-                </label>
-                <input
-                  type="text"
-                  value={settings.printer.name}
-                  onChange={(e) => setSettings({
-                    ...settings,
-                    printer: { ...settings.printer, name: e.target.value }
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Printer Model
-                </label>
-                <input
-                  type="text"
-                  value={settings.printer.model}
-                  onChange={(e) => setSettings({
-                    ...settings,
-                    printer: { ...settings.printer, model: e.target.value }
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Build Volume (mm)</h3>
-              <div className="grid grid-cols-3 gap-4">
-                {['x', 'y', 'z'].map((axis) => (
-                  <div key={axis}>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {axis.toUpperCase()} Axis
-                    </label>
-                    <input
-                      type="number"
-                      value={settings.printer.buildVolume[axis as keyof typeof settings.printer.buildVolume]}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        printer: {
-                          ...settings.printer,
-                          buildVolume: {
-                            ...settings.printer.buildVolume,
-                            [axis]: Number(e.target.value)
-                          }
-                        }
-                      })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <PrinterSettings
+            settings={settings.printer}
+            onSettingsChange={(printerSettings) => 
+              setSettings({ ...settings, printer: printerSettings })
+            }
+          />
         )}
 
         {/* Temperature Profiles Tab */}
         {activeTab === 'profiles' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium text-gray-900">Temperature Profiles</h3>
-              <button
-                onClick={() => {
-                  setEditingProfile(null);
-                  setShowProfileModal(true);
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              >
-                Add Profile
-              </button>
-            </div>
+          <TemperatureProfiles
+            profiles={settings.profiles}
+            onEditProfile={(profile) => {
+              setEditingProfile(profile);
+              setShowProfileModal(true);
+            }}
+            onDeleteProfile={handleDeleteProfile}
+            onAddProfile={() => {
+              setEditingProfile(null);
+              setShowProfileModal(true);
+            }}
+          />
+        )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {settings.profiles.map((profile) => (
-                <div key={profile.id} className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h4 className="font-medium text-gray-900">{profile.name}</h4>
-                      <p className="text-sm text-gray-500">{profile.material}</p>
-                    </div>
-                    <div className="flex space-x-1">
-                      <button
-                        onClick={() => {
-                          setEditingProfile(profile);
-                          setShowProfileModal(true);
-                        }}
-                        className="p-1 text-gray-400 hover:text-blue-600"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        onClick={() => handleDeleteProfile(profile.id)}
-                        className="p-1 text-gray-400 hover:text-red-600"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Hotend:</span>
-                      <span>{profile.hotendTemp}°C</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Bed:</span>
-                      <span>{profile.bedTemp}°C</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Fan:</span>
-                      <span>{profile.fanSpeed}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Speed:</span>
-                      <span>{profile.printSpeed}mm/s</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* User Preferences Tab */}
+        {activeTab === 'preferences' && (
+          <UserPreferences
+            preferences={settings.preferences}
+            profiles={settings.profiles.map(p => ({ id: p.id, name: p.name }))}
+            onPreferencesChange={(preferences) => 
+              setSettings({ ...settings, preferences })
+            }
+          />
+        )}
+
+        {/* Calibration Settings Tab */}
+        {activeTab === 'calibration' && (
+          <CalibrationSettings
+            calibration={settings.calibration}
+            onCalibrationChange={(calibration) => 
+              setSettings({ ...settings, calibration })
+            }
+            demoMode={demoMode}
+          />
         )}
 
         {/* Backup Tab */}
         {activeTab === 'backup' && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Backup & Restore</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h4 className="font-medium text-gray-900 mb-3">Export Settings</h4>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Download all your printer settings, profiles, and preferences as a JSON file.
-                  </p>
-                  <button
-                    onClick={exportSettings}
-                    className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                  >
-                    Export Settings
-                  </button>
-                </div>
-
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h4 className="font-medium text-gray-900 mb-3">Import Settings</h4>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Restore settings from a previously exported JSON file.
-                  </p>
-                  <input
-                    type="file"
-                    accept=".json"
-                    onChange={importSettings}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+          <BackupSettings
+            onExportSettings={exportSettings}
+            onImportSettings={(file) => {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                try {
+                  const importedSettings = JSON.parse(e.target?.result as string);
+                  saveSettings(importedSettings);
+                  showMessage('success', 'Settings imported successfully');
+                } catch (error) {
+                  showMessage('error', 'Invalid settings file');
+                }
+              };
+              reader.readAsText(file);
+            }}
+            demoMode={demoMode}
+          />
         )}
           </motion.div>
 
@@ -588,56 +473,12 @@ export default function SettingsManagement({ demoMode = false }: SettingsManagem
           </motion.div>
 
           {/* Profile Modal */}
-          <AnimatePresence>
-            {showProfileModal && (
-              <motion.div 
-                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <motion.div 
-                  className="bg-white rounded-lg p-6 w-full max-w-md"
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.9, opacity: 0 }}
-                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                >
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
-                    {editingProfile ? 'Edit Profile' : 'Add Profile'}
-                  </h3>
-            
-            {/* Profile form would go here */}
-            <div className="space-y-4">
-              <input
-                type="text"
-                placeholder="Profile Name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-              {/* More form fields... */}
-            </div>
-            
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={() => setShowProfileModal(false)}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  // Handle save
-                  setShowProfileModal(false);
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              >
-                Save
-              </button>
-            </div>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <ProfileModal
+            isOpen={showProfileModal}
+            onClose={() => setShowProfileModal(false)}
+            onSave={handleSaveProfile}
+            editingProfile={editingProfile}
+          />
         </CardContent>
       </Card>
     </motion.div>
