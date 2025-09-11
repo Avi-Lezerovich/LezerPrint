@@ -22,6 +22,7 @@ import {
   Smartphone,
   Globe
 } from 'lucide-react'
+import { Navigation } from '@/components/ui/Navigation'
 
 export default function HomePage() {
   const containerVariants = {
@@ -88,46 +89,11 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
       {/* Navigation */}
-      <motion.nav 
-        className="relative z-10 flex items-center justify-between p-6 max-w-7xl mx-auto"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        <motion.div 
-          className="flex items-center space-x-3"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.2 }}
-        >
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-            <Layers className="w-6 h-6 text-white" />
-          </div>
-          <span className="text-2xl font-bold text-gradient">LezerPrint</span>
-        </motion.div>
-        
-        <div className="flex items-center space-x-4">
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Link
-              href="https://github.com/Avi-Lezerovich/LezerPrint"
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-all duration-200 p-2 rounded-lg hover:bg-white/50"
-              target="_blank"
-            >
-              <Github className="w-5 h-5" />
-              <span className="hidden sm:inline font-medium">GitHub</span>
-            </Link>
-          </motion.div>
-          
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Link href="/login" className="btn-primary">
-              Get Started
-            </Link>
-          </motion.div>
-        </div>
-      </motion.nav>
+      <Navigation />
 
       {/* Hero Section */}
       <motion.div 
-        className="max-w-7xl mx-auto px-6 pt-16 pb-24"
+        className="max-w-7xl mx-auto px-6 pt-24 pb-24"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
